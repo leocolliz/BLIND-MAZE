@@ -16,6 +16,7 @@ boolean mode2 = false; // sound + haptic
 boolean mode3 = false; // visual
 
 int roundNumber = 0;
+int[] mode = {};
 
 
 int cx, cy, Diameter; // variables for obj
@@ -87,7 +88,7 @@ void draw() {
       buttonPushed = false; // reset flag value
       tutorial = false;
       game = true;
-      cx_new = randomVal();
+      startRound(); // start a round in a certain mode
     }
     else
     {
@@ -151,7 +152,58 @@ void drawType(float x, char word) {
 
 void startRound()
 {
+  int newMode;
+  int startSound;
   roundNumber += 1;
+  if (roundNumber < 4)
+  {
+    //myArrayList.remove(14)
+    newMode = int(random(3));
+    for (int i = 0; i < mode.length; i++) 
+    {
+      if(mode[i] == newMode)
+      {
+        newMode = int(random(mode.length));
+      }
+    }
+    mode = append(mode, newMode);
+    chooseMode(newMode);
+    if ((mode1) | (mode2))
+    {
+       startSound = 1;
+    }
+    else
+    {
+      startSound = 0;
+    }
+    
+    // send start to pd 
+    OscMessage myMessage = new OscMessage("/start");
+    myMessage.add(startSound); /* add an int to the osc message */
+    /* send the message */
+    oscP5.send(myMessage, myRemoteLocation);
+    
+    cx_new = randomVal(); // set the obj to a random position
+  }
+  
+}
+
+void chooseMode(int modeNumber)
+{
+    mode1 = false;
+    mode2 = false;
+    mode3 = false;
+  switch(modeNumber) {
+    case 0:
+    mode1 = true;
+    break;
+    case 1:
+    mode2 = true;
+    break;
+    case 2:
+    mode3 = true;
+    break;
+  }
 }
 
 void gameRound(int cx_val, PrintWriter file){
@@ -188,7 +240,6 @@ void gameRound(int cx_val, PrintWriter file){
         cx_new = cx;
       }
       
-      
       if ((mode1) | (mode2))
       {
         c_angle = (cx_new+500)/2;
@@ -199,7 +250,7 @@ void gameRound(int cx_val, PrintWriter file){
       
     }
   }
-  else
+  else // if the button is pushed save values and start a new round
   {
     accuracy = 100 - (abs(cx_new - 500)/10); // compute accuracy in %
     timeOfTest = millis() - time;
@@ -212,6 +263,7 @@ void gameRound(int cx_val, PrintWriter file){
     {
       file.println(accuracy + ";" + timeOfTest + ";");
       file.flush();
+      startRound();
     }
   }
 }
