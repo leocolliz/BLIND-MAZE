@@ -1,4 +1,4 @@
-#N canvas 1651 27 1920 976 10;
+#N canvas 1236 -20 1920 976 10;
 #X declare -lib SDT;
 #X msg 860 17 Sound Design Toolkit \; (C) 2001 - 2021 \; \; Project SOb - soundobject.org \; Project CLOSED - closed.ircam.fr \; Project NIW - soundobject.org/niw \; Project SkAT-VG - skatvg.eu;
 #X obj 921 150 loadbang;
@@ -60,6 +60,7 @@
 #X obj 588 91 list trim;
 #X obj 588 119 route start;
 #X floatatom 588 146 5 0 0 0 - - - 0;
+#X obj 46 565 loadbang;
 #X connect 1 0 20 0;
 #X connect 2 0 11 0;
 #X connect 3 0 11 0;
@@ -232,3 +233,5 @@
 #X connect 55 0 56 0;
 #X connect 56 0 57 0;
 #X connect 57 0 42 0;
+#X connect 58 0 36 0;
+#X connect 58 0 35 0;
