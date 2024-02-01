@@ -80,6 +80,7 @@ void draw() {
   }
   else if (tutorial)
   {
+    
     // TO DO : send to pd "start"
     drawType(width * 0.5, 't');
     if (buttonPushed == true)
@@ -101,6 +102,11 @@ void draw() {
     {
       buttonPushed = false; // reset flag value
       tutorial = true;
+      // send start to pd 
+      OscMessage myMessage = new OscMessage("/start");
+      myMessage.add(1); /* add an int to the osc message */
+      /* send the message */
+      oscP5.send(myMessage, myRemoteLocation);
     }
     else
     {
@@ -180,7 +186,7 @@ void startRound()
     }
     mode = append(mode, newMode);
     chooseMode(newMode);
-    if ((mode1) | (mode2))
+    if ((mode1) | (mode2) | (tutorial))
     {
       startSound = 1;
     }
