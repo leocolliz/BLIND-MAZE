@@ -43,7 +43,7 @@ void setup() {
   textFont(f);
   
   // set serial channel
-  String portName = Serial.list()[0]; // match port number to Arduino
+  String portName = Serial.list()[1]; // match port number to Arduino
   myPort = new Serial(this, portName, 9600);
   
   // variable for the object
