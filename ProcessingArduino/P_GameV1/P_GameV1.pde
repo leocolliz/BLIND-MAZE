@@ -4,24 +4,25 @@ Serial myPort;         // Create object from Serial class
 static String val;     // Data received from the serial port
 int sensorVal = 0;     // store data form serial port
 
-
+// variables for text messages
 PFont f;
-boolean buttonPushed = false;
 
 // general stuff
-boolean tutorial = false;
+boolean tutorial = false; 
 boolean game = false;
 boolean mode1 = true;  // sound + haptic + visual
 boolean mode2 = false; // sound + haptic
 boolean mode3 = false; // visual
+boolean buttonPushed = false; 
 
+int time = millis();
 int roundNumber = 0;
 int[] mode = {};
 
-
-int cx, cy, Diameter; // variables for obj
+// variables for obj
+int cx, cy, Diameter; 
 int cx_new = -300;
-int time = millis();
+
 
 // variables for the record file
 String[] lines;
@@ -47,7 +48,7 @@ void setup() {
   
   // variable for the object
   cy = height / 2;
-  cx = 0;
+  cx = 0; 
   Diameter = 150;
   
   // open record file to save data
@@ -73,10 +74,8 @@ void draw() {
 
   if (game)
   {
-   // TO DO : start a first round choosing random mode + set random position for obj
-   
-    background(0);
-    fill(255, 204);
+    drawType(width * 0.5, 'g');
+    //fill(255, 204);
     gameRound(x, output);
   }
   else if (tutorial)
@@ -105,7 +104,7 @@ void draw() {
     }
     else
     {
-      drawType(width * 0.5, 'r');
+      drawType(width * 0.5, 's');
     }
   }  
 }
@@ -137,16 +136,30 @@ int ListenSerial() {
 
 void drawType(float x, char word) {
   textAlign(CENTER);
-  if (word == 't')
-  {
+  
+    switch(word) {
+    case 't':
     background(0);
     text("Welcome to the tutorial, you can try the sensor\nWhen you are ready, press the button", x, 95);
     fill(150);
-  }
-  else if (word == 'r')
-  {
+    break;
+    case 's':
     text("Press button to start tutorial", x, height / 2);
     fill(51);
+    break;
+    case 'g':
+    background(0); // reset the screen
+    if (mode1){
+      text("Round " + roundNumber + "/3 : sound + haptic + visual", x, 95);
+    }
+    else if (mode2){
+      text("Round " + roundNumber + "/3 : sound + haptic", x, 95);
+    }
+    else if (mode3){
+      text("Round " + roundNumber + "/3 : visual", x, 95);
+    }
+    fill(150);
+    break;
   }
 }
 
@@ -157,20 +170,19 @@ void startRound()
   roundNumber += 1;
   if (roundNumber < 4)
   {
-    //myArrayList.remove(14)
     newMode = int(random(3));
     for (int i = 0; i < mode.length; i++) 
     {
       if(mode[i] == newMode)
       {
-        newMode = int(random(mode.length));
+        newMode = int(random(3));
       }
     }
     mode = append(mode, newMode);
     chooseMode(newMode);
     if ((mode1) | (mode2))
     {
-       startSound = 1;
+      startSound = 1;
     }
     else
     {
@@ -184,8 +196,13 @@ void startRound()
     oscP5.send(myMessage, myRemoteLocation);
     
     cx_new = randomVal(); // set the obj to a random position
+    time = millis(); // set new time
+  } 
+  else
+  {
+    output.close(); // close data file
+    exit();
   }
-  
 }
 
 void chooseMode(int modeNumber)
@@ -207,7 +224,7 @@ void chooseMode(int modeNumber)
 }
 
 void gameRound(int cx_val, PrintWriter file){
-  int accuracy = 0;
+  float accuracy = 0;
   int timeOfTest;
   int c_angle = 0;
    
@@ -244,7 +261,7 @@ void gameRound(int cx_val, PrintWriter file){
       {
         c_angle = (cx_new+500)/2;
         sendAngleToPD(c_angle);  // send value to PD
-        myPort.write(c_angle);
+        myPort.write(c_angle/4);
         println(c_angle + " here!");
       }
       
@@ -257,11 +274,15 @@ void gameRound(int cx_val, PrintWriter file){
     
     println(timeOfTest + "ms" + accuracy );
     buttonPushed = false; // reset flag
-    time = timeOfTest; // set new time
 
     if (tutorial == false) // if we are not in tutorial, save the data
     {
-      file.println(accuracy + ";" + timeOfTest + ";");
+      if (mode1)
+      { file.println("SHV" + ";" + accuracy + ";" + timeOfTest + ";"); }
+      else if (mode2)
+      { file.println("SH" + ";" + accuracy + ";" + timeOfTest + ";"); }
+      else if (mode3)
+      { file.println("V" + ";" + accuracy + ";" + timeOfTest + ";"); }
       file.flush();
       startRound();
     }
