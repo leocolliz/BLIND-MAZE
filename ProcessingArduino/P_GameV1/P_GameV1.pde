@@ -43,7 +43,7 @@ void setup() {
   textFont(f);
   
   // set serial channel
-  String portName = Serial.list()[1]; // match port number to Arduino
+  String portName = Serial.list()[0]; // match port number to Arduino
   myPort = new Serial(this, portName, 9600);
   
   // variable for the object
@@ -63,7 +63,7 @@ void setup() {
   frameRate(25);
   // start oscP5, listening for incoming messages at port 12000
   oscP5 = new OscP5(this, 12000);
-  myRemoteLocation = new NetAddress("127.0.0.1", 8000); // TO DO : careful check number !!!
+  myRemoteLocation = new NetAddress("127.0.0.1", 8000); // careful check number !!!
 }
 
 
@@ -201,12 +201,18 @@ void startRound()
     /* send the message */
     oscP5.send(myMessage, myRemoteLocation);
     
-    cx_new = randomVal(); // set the obj to a random position
+    cx = randomVal(); // set the obj to a random position
     time = millis(); // set new time
   } 
   else
   {
     output.close(); // close data file
+    
+    // stops sound PD
+    OscMessage myMessage = new OscMessage("/start");
+    myMessage.add(0); /* add an int to the osc message */
+    /* send the message */
+    oscP5.send(myMessage, myRemoteLocation);
     exit();
   }
 }
@@ -236,7 +242,7 @@ void gameRound(int cx_val, PrintWriter file){
    
   if ((mode1) | (mode3))
   {
-    ellipse(cx_new, cy, Diameter, Diameter); // draw the oval to the new coordonates
+    ellipse(cx, cy, Diameter, Diameter); // draw the oval to the new coordonates
     fill(255, 200); 
     ellipse(width/2, cy, Diameter/30, Diameter/30); // add a pointer to set the center
     fill(150,150);
@@ -250,22 +256,17 @@ void gameRound(int cx_val, PrintWriter file){
       
       if (cx < -500)
       {
-        cx_new = 1500;
         cx = 1500;
       }
       else if  (cx > 1500)
       {
-        cx_new = -500;
         cx = -500;
       }
-      else
-      {
-        cx_new = cx;
-      }
+
       
       if ((mode1) | (mode2))
       {
-        c_angle = (cx_new+500)/2;
+        c_angle = (cx+500)/2;
         sendAngleToPD(c_angle);  // send value to PD
         myPort.write(c_angle/4);
         println(c_angle + " here!");
@@ -275,7 +276,7 @@ void gameRound(int cx_val, PrintWriter file){
   }
   else // if the button is pushed save values and start a new round
   {
-    accuracy = 100 - (abs(cx_new - 500)/10); // compute accuracy in %
+    accuracy = 100 - (abs(cx - 500)/10); // compute accuracy in %
     timeOfTest = millis() - time;
     
     println(timeOfTest + "ms" + accuracy );
